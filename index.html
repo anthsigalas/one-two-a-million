@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ONE, TWO, A MILLION</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+	--bg0:#02040c;
+	--bg1:#050a18;
+	--bg2:#0a1330;
+
+  --ink:#f2efe9;
+  --muted:#c7c0b5;
+  --hair:rgba(242,239,233,0.16);
+  --card:rgba(255,255,255,0.065);
+
+  --max: 1040px;
+  --safeTop: 90px;
+  --safeBottom: 140px;
+}
+
+
+    *{box-sizing:border-box;}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      overflow-x:hidden;
+      background: var(--bg0);
+    }
+
+    .stage{
+      position:fixed;
+      inset:0;
+      z-index:-5;
+      pointer-events:none;
+      background:
+    radial-gradient(900px 520px at 50% 6%, rgba(255,255,255,0.06), transparent 62%),
+    radial-gradient(720px 520px at 18% 46%, rgba(120,170,255,0.07), transparent 65%),
+    radial-gradient(720px 520px at 86% 62%, rgba(160,210,255,0.05), transparent 65%),
+    linear-gradient(180deg, var(--bg2) 0%, var(--bg1) 52%, var(--bg0) 100%);
+    }
+
+    .grain{
+      position:fixed;
+      inset:-20%;
+      z-index:-1;
+      pointer-events:none;
+      opacity:0.09;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+      mix-blend-mode:overlay;
+      transform:translate3d(0,0,0);
+    }
+
+    .floaters{
+      position:fixed;
+      inset:0;
+      z-index:-2;
+      pointer-events:none;
+      overflow:hidden;
+      padding-top: var(--safeTop);
+      padding-bottom: var(--safeBottom);
+
+      /* Edge fade */
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0,0,0,1) 8%,
+        rgba(0,0,0,1) 92%,
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0,0,0,1) 8%,
+        rgba(0,0,0,1) 92%,
+        transparent 100%
+      );
+    }
+
+    .floater{
+      position:absolute;
+      aspect-ratio: 16 / 10;
+      height:auto;
+      min-height:180px;
+
+      border-radius:22px;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+
+      filter: brightness(1.20) contrast(1.10) saturate(0.98);
+      box-shadow: 0 26px 90px rgba(0,0,0,0.55);
+      border:1px solid rgba(242,239,233,0.14);
+      mix-blend-mode: screen;
+
+      opacity:0;
+      transform: translate3d(0,0,0);
+      will-change: top, opacity, transform;
+      transition: opacity 140ms linear;
+    }
+
+    .wrap{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 22px 70px; /* ✅ was calc(90px + var(--safeBottom)) */
+  position:relative;
+}
+
+    .kicker{
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:center;
+      padding-top: 22px;
+    }
+
+    .hero{
+      height: calc(100vh - 62px);
+      min-height: 560px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding: calc(40px + var(--safeTop)) 0 40px;
+      position:relative;
+    }
+
+    .title{
+  width:100%;
+  max-width: var(--max);
+  font-family: "Open Sans", ui-sans-serif, system-ui;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.34em;
+  font-size: clamp(34px, 5.2vw, 66px);
+  line-height: 1.08;
+  margin: 0;
+  padding: 0 10px;
+  white-space: nowrap; /* ✅ force one line on desktop */
+  text-shadow:
+    0 10px 40px rgba(0,0,0,0.55),
+    0 0 28px rgba(160,210,255,0.22);
+}
+
+.title{
+  transform: translateY(-24px);
+}
+
+.title .line{
+  display:inline;
+}
+
+.title .line2{
+  margin-top: 0;
+}
+
+.mobile-only{ display:none; }
+
+@media (max-width: 640px){
+  .title{
+    white-space: normal;       /* allow wrap */
+    letter-spacing: 0.28em;    /* slightly tighter for phones */
+    line-height: 1.12;
+  }
+
+  .title .line{
+    display:block;             /* force cinematic break */
+  }
+
+  .title .line2{
+    margin-top: 10px;          /* breathing room between lines */
+  }
+}
+
+
+    .hero:after{
+      content:"";
+      position:absolute;
+      left:50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      width: min(520px, 78vw);
+      height: 1px;
+      background: rgba(242,239,233,0.18);
+    }
+
+    .hair{height:1px;background:var(--hair);margin:42px 0 42px;}
+    section.block{ margin-top: 42px; }
+    section.block.big{ margin-top: 62px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 26px;
+      align-items:start;
+    }
+    @media (max-width: 900px){ .grid{ grid-template-columns:1fr; } }
+
+    /* ✅ Only the Bio grid row: stretch both columns to same height */
+    #bio.grid{ align-items: stretch; }
+    #bio .card{ height: 100%; }
+    #bio aside.card{ display:flex; flex-direction:column; }
+    #bio aside.card .portrait{ flex: 1 1 auto; }
+
+    .card{
+      border:1px solid var(--hair);
+      border-radius:18px;
+      background: var(--card);
+      padding: 18px 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Visual pause + centered connector */
+    .visual-pause{
+      height: min(120vh, 1400px);
+      pointer-events:none;
+      position: relative;
+      margin: 18px 0 18px;
+    }
+    .connector{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      top: 6%;
+      bottom: 6%;
+      width: 1px;
+      background: rgba(242,239,233,0.12);
+      opacity: 0.95;
+    }
+    .connector i{
+      position:absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 99px;
+      background: rgba(242,239,233,0.34);
+      box-shadow:
+        0 0 0 7px rgba(242,239,233,0.06),
+        0 210px 0 0 rgba(242,239,233,0.22),
+        0 420px 0 0 rgba(242,239,233,0.18),
+        0 630px 0 0 rgba(242,239,233,0.14);
+    }
+    @media (max-width: 900px){ .visual-pause{ height: 90vh; } }
+
+    h2{
+      margin:0 0 12px;
+      font-family: "Open Sans", ui-sans-serif, system-ui;
+      font-weight: 700;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .logline, .synopsis{
+      margin:0;
+      white-space: pre-line;
+    }
+    .logline{
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.75;
+      max-width: 110ch;
+    }
+    .synopsis{
+      font-size: 15px;
+      line-height: 1.9;
+      max-width: 78ch;
+    }
+
+    .facts ul{
+      list-style:none;
+      padding:0;
+      margin:0;
+      display:grid;
+      gap:10px;
+    }
+    .facts li{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      font-size:13px;
+      color:var(--muted);
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(242,239,233,0.10);
+    }
+    .facts li:last-child{border-bottom:none;padding-bottom:0;}
+    .facts .val{ color: var(--ink); }
+
+    /* Portrait card (single border around image only) */
+    .portrait{
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(242,239,233,0.14);
+      overflow:hidden;
+      background: rgba(0,0,0,0.15);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+    }
+    .portrait img{
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit: cover;
+      filter: contrast(1.05) saturate(0.98) brightness(1.04);
+    }
+    .portrait-name{
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .02em;
+    }
+
+    .trailer{
+      border:1px solid var(--hair);
+      border-radius: 18px;
+      overflow:hidden;
+      background:#000;
+    }
+    .trailer iframe{
+      width:100%;
+      aspect-ratio:16/9;
+      border:0;
+      display:block;
+    }
+
+    .footer{
+      margin-top: 54px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(242,239,233,0.12);
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px 18px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    a{
+      color:var(--ink);
+      text-decoration:none;
+      border-bottom:1px solid rgba(242,239,233,0.30);
+    }
+    a:hover{ border-bottom-color: rgba(242,239,233,0.70); }
+
+    @media (prefers-reduced-motion: reduce){
+      .floater{ transition:none; }
+    }
+	
+/* ===== MOBILE helpers (plain stills + bounded carousel) ===== */
+@media (max-width: 900px){
+
+.mobile-only{ display:block; }
+
+
+  /* tighten top stack on mobile */
+  .kicker{ padding-top: 24px; margin-bottom: 10px; }
+  .hero{
+    height: auto;
+    min-height: 0;
+    padding: 70px 0 50px;
+  }
+  .title{ transform: none; }           /* remove the -24px lift on mobile */
+  .hero:after{ display:none; }         /* remove extra separator line on mobile */
+  section.block.big{ margin-top: 32px; } /* was 62px globally */
+  #m-still-top{ margin-top: 20px; }    /* still1 closer to title */
+  #m-still-top .m-single{
+  margin-bottom: 80px;
+}
+  .m-single{ margin: 16px 0; }         /* less vertical waste around stills */
+
+
+  /* hide Details that currently sits next to Synopsis on mobile */
+  #synopsis aside.facts{ display:none; }
+  
+    #bio aside.card{ display:none !important; }
+
+  
+    /* remove desktop spacer elements on mobile */
+  .visual-pause{ display:none !important; }
+  .hair{ display:none !important; }
+
+
+  /* still blocks without the bordered “card” look */
+  .m-stills-plain{
+    display:grid;
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .m-still-plain{
+    width:100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 16px;
+    overflow:hidden;
+    background: rgba(255,255,255,0.03);
+  }
+  .m-still-plain img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .m-single{ margin: 14px 0; }
+
+  /* FIX: carousel slides must be bounded to phone width */
+  .carousel{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x mandatory;
+    display:flex;
+    gap: 12px;
+    padding: 6px 2px 10px;
+  }
+  .carousel::-webkit-scrollbar{ display:none; }
+
+  .carousel-hint{
+    margin: 0 0 10px;
+    font-family: "Open Sans", ui-sans-serif, system-ui;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+
+  .slide{
+    flex: 0 0 auto;
+    width: 86vw;
+    max-width: 420px;
+    aspect-ratio: 16 / 10;
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid rgba(242,239,233,0.14);
+    box-shadow:0 18px 60px rgba(0,0,0,0.35);
+    scroll-snap-align:start;
+  }
+  .slide img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+}
+	
+  </style>
+</head>
+
+<body>
+  <div class="stage"></div>
+
+  <div class="floaters" id="floaters">
+    <div class="floater" data-i="1"  data-x="6"  data-w="42" style="background-image:url('assets/img/still1.jpg');"></div>
+    <div class="floater" data-i="2"  data-x="54" data-w="40" style="background-image:url('assets/img/still2.jpg');"></div>
+    <div class="floater" data-i="3"  data-x="10" data-w="34" style="background-image:url('assets/img/still3.jpg');"></div>
+    <div class="floater" data-i="4"  data-x="60" data-w="42" style="background-image:url('assets/img/still4.jpg');"></div>
+    <div class="floater" data-i="5"  data-x="8"  data-w="36" style="background-image:url('assets/img/still5.jpg');"></div>
+    <div class="floater" data-i="6"  data-x="56" data-w="32" style="background-image:url('assets/img/still6.jpg');"></div>
+    <div class="floater" data-i="7"  data-x="16" data-w="30" style="background-image:url('assets/img/still7.jpg');"></div>
+    <div class="floater" data-i="8"  data-x="62" data-w="40" style="background-image:url('assets/img/still8.jpg');"></div>
+    <div class="floater" data-i="9"  data-x="10" data-w="32" style="background-image:url('assets/img/still9.jpg');"></div>
+    <div class="floater" data-i="10" data-x="58" data-w="34" style="background-image:url('assets/img/still10.jpg');"></div>
+    <div class="floater" data-i="11" data-x="12" data-w="30" style="background-image:url('assets/img/still11.jpg');"></div>
+    <div class="floater" data-i="12" data-x="56" data-w="32" style="background-image:url('assets/img/still12.jpg');"></div>
+  </div>
+
+  <div class="grain"></div>
+
+  <main class="wrap">
+    <div class="kicker">
+      <span>Short Film · UK · 2026</span>
+      <span>Private Festival Page</span>
+    </div>
+
+    <section class="hero" id="hero">
+      <h1 class="title" aria-label="Title">
+        <span class="line line1">ONE, TWO,</span>
+        <span class="line line2">A MILLION</span>
+      </h1>
+    </section>
+	
+	<!-- MOBILE: still1 below title -->
+<section class="block big mobile-only" id="m-still-top">
+  <div class="m-single">
+    <div class="m-still-plain">
+      <img src="assets/img/still1.jpg" alt="Film still 1">
+    </div>
+  </div>
+</section>
+
+
+    <section class="block big" id="logline">
+      <div class="card">
+        <h2>Logline</h2>
+        <p class="logline">A young man gradually falls into a thought spiral as he tries to find a logical explanation for his Sunday blues, bouncing between his physical need to feel better, and a desire for higher meaning</p>
+      </div>
+    </section>
+
+<!-- MOBILE: still2 + still3 after logline (no title, no card) -->
+<section class="block big mobile-only" id="m-stills-23">
+  <div class="m-stills-plain">
+    <div class="m-still-plain"><img src="assets/img/still2.jpg" alt="Film still 2"></div>
+    <div class="m-still-plain"><img src="assets/img/still3.jpg" alt="Film still 3"></div>
+  </div>
+</section>
+
+<!-- MOBILE: Details bucket moved up -->
+<section class="block big mobile-only" id="m-details">
+  <div class="card facts">
+    <h2>Details</h2>
+    <ul>
+      <li><span>Duration</span><span class="val">15'</span></li>
+      <li><span>Country</span><span class="val">UK</span></li>
+      <li><span>Year</span><span class="val">2026</span></li>
+      <li><span>Language</span><span class="val">English</span></li>
+      <li><span>Starring</span><span class="val">Louis Cunningham (Marie Antoinette)</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- MOBILE: one more still -->
+<section class="block big mobile-only" id="m-still-6">
+  <div class="m-single">
+    <div class="m-still-plain">
+      <img src="assets/img/still6.jpg" alt="Film still 6">
+    </div>
+  </div>
+</section>
+
+
+
+    <section class="visual-pause" aria-hidden="true">
+      <span class="connector"><i></i></span>
+    </section>
+
+    <div class="hair"></div>
+
+    <section class="block big grid" id="synopsis">
+      <div class="card">
+        <h2>Synopsis</h2>
+        <p class="synopsis">Charlie spends the final hours of his Sunday eating ice cream alone in his flat, while a film that he has long stopped watching continues to play on his laptop. 
+		
+		He is searching for a reason for his inexplicable melancholy when he remembers an old dream in which he was beating his mother. Doubt begins to creep in about how much control he really has over himself. His mind begins to question the authority it holds over his body. 
+		
+		He tries to dig deeper but the deepest he can reach is his naked flesh. 
+		In the meantime, the movie on his laptop continues to play: a mythical hero from five thousand years ago is locked in a struggle not unlike his own.
+		
+		The next morning, Charlie wakes up fine. Yesterday feels distant, almost irrelevant. He gets dressed and leaves for work. 
+		But something has been left ajar.</p>
+      </div>
+
+      <aside class="card facts">
+        <h2>Details</h2>
+        <ul>
+          <li><span>Duration</span><span class="val">15'</span></li>
+          <li><span>Country</span><span class="val">UK</span></li>
+          <li><span>Year</span><span class="val">2026</span></li>
+          <li><span>Language</span><span class="val">English</span></li>
+		  <li><span>Starring</span><span class="val">Louis Cunningham (Marie Antoinette, 2022-)</span></li>
+        </ul>
+      </aside>
+    </section>
+	
+	<!-- MOBILE: two stills after synopsis -->
+<section class="block big mobile-only" id="m-stills-56">
+  <div class="m-stills-plain">
+    <div class="m-still-plain"><img src="assets/img/still5.jpg" alt="Film still 5"></div>
+    <div class="m-still-plain"><img src="assets/img/still7.jpg" alt="Film still 7"></div>
+  </div>
+</section>
+
+
+    <section class="block big grid" id="bio">
+      <div class="card">
+        <h2>Director’s Bio</h2>
+        <p class="synopsis">Antonis Sigalas, born and raised in Athens, Greece makes his directorial debut with "One, Two, a Million".
+
+His background spans engineering, consulting, finance and business. He currently works as a Media Investment Banker at Moelis, advising on transactions across the global media and entertainment sector.
+
+Antonis has long aspired to create cinema that explores the fundamental, universal aspects of the human condition. With "One, Two a Million" on its festival run, his focus on creating independent films remains unfazed, with development already underway for his second project "Kastelorizo", a hybrid film blending fiction and documentary elements to explore the role of art in human existence.
+
+Antonis holds a degree in Electrical and Computer Engineering from the National Technical University of Athens and an MSc in International Finance from HEC Paris.</p>
+      </div>
+
+      <aside class="card facts">
+        <div class="portrait">
+          <img src="assets/img/portrait.jpg" alt="Portrait of Antonis Sigalas">
+        </div>
+        <div class="portrait-name">Antonis Sigalas</div>
+      </aside>
+    </section>
+	
+	<!-- MOBILE: carousel for remaining stills -->
+<section class="block big mobile-only" id="m-carousel">
+  <div class="carousel-hint mobile-only">Swipe to browse</div>
+
+  <div class="carousel" aria-label="Film still carousel">
+    <div class="slide"><img src="assets/img/still9.jpg" alt="Film still 9"></div>
+    <div class="slide"><img src="assets/img/still4.jpg" alt="Film still 4"></div>
+    <div class="slide"><img src="assets/img/still10.jpg" alt="Film still 10"></div>
+    <div class="slide"><img src="assets/img/still8.jpg" alt="Film still 8"></div>
+    <div class="slide"><img src="assets/img/still11.jpg" alt="Film still 11"></div>
+    <div class="slide"><img src="assets/img/still12.jpg" alt="Film still 12"></div>
+  </div>
+</section>
+
+
+    <section class="block big" id="trailer">
+      <div class="card" style="padding:14px 16px; margin-bottom:10px;">
+        <h2 style="margin:0;">Trailer</h2>
+      </div>
+
+      <div class="trailer" aria-label="Trailer">
+        <iframe
+          src="https://player.vimeo.com/video/1093337676?h=d8197c6940&title=0&byline=0&portrait=0"
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span><a href="https://www.instagram.com/onetwoamillion/" target="_blank" rel="noreferrer">Instagram</a></span>
+      <span><a href="https://www.linkedin.com/in/anthonysigalas/" target="_blank" rel="noreferrer">LinkedIn</a></span>
+      <span><a href="mailto:anth.sigalas@gmail.com">anth.sigalas@gmail.com</a></span>
+      <span>+44 7424 513555</span>
+    </footer>
+  </main>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const floaters = Array.from(document.querySelectorAll('.floater'));
+  
+    const isMobile = window.matchMedia('(max-width: 900px)').matches;
+  if (isMobile) return; // mobile uses linear stills, no floating system
+
+
+  function clamp01(n){ return Math.max(0, Math.min(1, n)); }
+
+  let targetY = window.scrollY || 0;
+  let smoothY = targetY;
+  let lastScrollTs = performance.now();
+  let rafId = null;
+
+  const easeActive = 0.10;
+  const easeIdle   = 0.18;
+  const idleMs = 140;
+
+  function init(){
+    const docH = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    const vh = window.innerHeight || 800;
+
+    const safeTop = 90;
+    const travelBottomBuffer = 200;
+    const scrollRange = Math.max(1, docH - vh);
+
+    const trailerEl = document.getElementById('trailer');
+    const trailerTop = trailerEl ? trailerEl.offsetTop : (scrollRange + vh);
+    const lastPeak = Math.max(
+      safeTop,
+      Math.min(scrollRange - travelBottomBuffer, trailerTop - vh * 0.85)
+    );
+
+    // tighter still spacing (as before)
+    const spacingScale = 0.76;
+
+    // ✅ NEW: add a small gap after the first "cluster" so still1 isn't crushed
+    // "two fingers" ≈ 32px–40px; we use 44px for a visible effect.
+    const TOP_CLUSTER_GAP_PX = 44;
+
+    floaters.forEach((el, idx) => {
+      const i = idx + 1;
+
+      const w = parseFloat(el.dataset.w || "40");
+      const x = parseFloat(el.dataset.x || "10");
+      el.style.width = `min(${w}vw, 560px)`;
+      el.style.left = `${x}%`;
+
+      const t = (floaters.length === 1) ? 0 : (i - 1) / (floaters.length - 1);
+
+      const peakSpan = (lastPeak - safeTop) * spacingScale;
+      let peakY = safeTop + t * peakSpan;
+
+      // ✅ Extra breathing room between still1/2 and the next group (still3+)
+      // (this fixes the “still1 almost overlapped by the one below” feeling)
+      if (idx >= 2) peakY += TOP_CLUSTER_GAP_PX;
+
+      el.dataset.peakY = String(peakY);
+
+      const depth = 0.10 + (i % 4) * 0.03;
+      el.dataset.depth = String(depth);
+
+      el.style.zIndex = String(10 + i);
+    });
+
+    // ✅ REMOVED: no special-case forcing still12 to match still11
+    // (bottom stills go back to normal spacing like the rest)
+
+    tick(performance.now());
+  }
+
+  function onScroll(){
+    targetY = window.scrollY || 0;
+    lastScrollTs = performance.now();
+    if (!rafId) rafId = requestAnimationFrame(tick);
+  }
+
+  function tick(now){
+    rafId = null;
+
+    const vh = window.innerHeight || 800;
+    const isIdle = (now - lastScrollTs) > idleMs;
+    const ease = isIdle ? easeIdle : easeActive;
+
+    if (!reduce){
+      smoothY += (targetY - smoothY) * ease;
+    } else {
+      smoothY = targetY;
+    }
+
+    const safeTop = 90;
+    const safeBottom = 140;
+    const topFadePx = 140;
+    const bottomFadePx = 280;
+
+    const bottomRailY = vh - safeBottom;
+    const smoothstep = (t) => t * t * (3 - 2 * t);
+
+    floaters.forEach((el, idx) => {
+      const peakY = parseFloat(el.dataset.peakY || "0");
+      const depth = parseFloat(el.dataset.depth || "0.12");
+
+      const rel = peakY - smoothY;
+      const drift = reduce ? 0 : (-smoothY * (depth - 0.10)) * 0.20;
+
+      const ypx = rel + drift;
+      el.style.top = ypx + "px";
+
+      // first still visible at load
+      let topRail = safeTop;
+      if (idx === 0) topRail = safeTop - 140;
+
+      let topRamp = clamp01((ypx - topRail) / Math.max(1, topFadePx));
+      topRamp = smoothstep(topRamp);
+
+      let bottomRamp = clamp01((bottomRailY - ypx) / Math.max(1, bottomFadePx));
+      bottomRamp = smoothstep(bottomRamp);
+
+      const edge = topRamp * bottomRamp;
+
+      const finalOpacity = 0.62 * edge;
+      el.style.opacity = finalOpacity.toFixed(3);
+
+      const s = 0.985 + 0.02 * edge;
+      el.style.transform = `translate3d(0,0,0) scale(${s})`;
+    });
+
+    const unsettled = Math.abs(targetY - smoothY) > 0.5;
+    if (!reduce && (!isIdle || unsettled)) {
+      rafId = requestAnimationFrame(tick);
+    }
+  }
+
+  window.addEventListener('resize', init, { passive:true });
+  window.addEventListener('scroll', onScroll, { passive:true });
+
+  init();
+})();
+</script>
+</body>
+</html>
